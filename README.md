@@ -183,9 +183,13 @@ So you've got your object, all of your values and methods are sound, but now you
 You have 4 grouping/cursor methods, which takes a set of keys (from your Ja object) and returns an array or value based on the method you used. 
 
 ```Ja.both( 'key1', 'key2' )```
+
 ```Ja.all(['key1','key2','key3',...])```
+
 ```Ja.neither( 'key1', 'key2' )```
+
 ```Ja.not(['key1','key2','key3',...])```
+
 ```Ja.any(['key1','key2','key3',...])```
 
 Their names pretty much say it all. But I'll show you how they work. with a basic example:
