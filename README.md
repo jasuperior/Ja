@@ -44,7 +44,9 @@ Though the miracle of tooling has given us Promises & Deffereds, a Few Reactive 
 
 Well, I'm glad you asked. Below I'll take you through some of the API. 
 
-**Every object must be initialized using ** ```javascript new Ja( value )```
+
+###Declarative Methods
+**Every object must be initialized using** ```javascript new Ja( value )```
 
 ```javascript
 	var cat = new Ja('snuggles'); //when any value other than an object is given, the value is applied to the Ja object itself via the .value property
@@ -81,10 +83,61 @@ Well, I'm glad you asked. Below I'll take you through some of the API.
 	newJa.bestfriend("Olivia",true) //changes value to "Olivia"
 ```
 
-
-```Ja.on( 'event' , callback( self ){} )``` is for firing a function once the event/method has fired. You only have access to the methods which are direct children to the object that .on() is being applied to. The callback takes the parent object itself as an argument. Every value, by default, has a 'change' event which signals once the value has changed (naturally). 
-
+```Ja.set( 'name' , value )``` New values can be added to the object using the .set() method. 
+```javascript
+	newJa.bestfriend().set('age', 2000);
+	newJa.bestfriend().age(true); //outputs 2000
 ```
-	react_cat.age().on("change", function(self){
 
-	})
+```Ja.setMany( object )``` You can also set multiple values at once by using the .setMany() method. 
+```javascript
+	newJa.setMany({ a: 1, b: 2});
+	newJa.a(true); //outputs 1
+	newJa.b(true); //outputs 2
+```
+
+```Ja.get( key )``` The .get() command simply returns the value of the key given. 
+```javascript
+	newJa.get('name'); //outputs "Ja Superior"
+```
+
+```Ja.define( 'name', function( self, arugments ) )``` The .define() command sets a new Method to the object. 
+
+```javascript
+	newJa.set('speed', 1);
+	newJa.define('run', function(self, arg ){
+		self.speed( arg, true);
+	});
+	newJa.run(10); //changes the .run property to 10
+```
+### Event Methods
+
+
+```Ja.on( 'event' , callback( self ){ ... } )``` is for firing a function once the event/method has fired. The callback takes the parent object itself as an argument. Every value, by default, has a 'change' event which signals once the value has changed (naturally). 
+
+```javascript
+	newJa.age().on("change", function(self){
+			console.log("I am finally"+self.value);
+	});
+	newJa.age(20,true); //outputs "I am finally 20!"
+```
+
+```Ja.when( name, pattern ).then( function( self ){ ... } )``` .when(), like the .on() command, awaits a change to perform it's callback which is now defined in the .then() method. However, rather than waiting for a method call, it instead waits for particular values of given keys. You can define a pattern ( object with keys and values ) as a parameter, to track changes in the Ja object for matching keys. **It is important that you use keys which exist in the Ja object, else .when WILL break.** You can also use a function in place of an object. Whether you use an object or function, in either case they must evaluate to true before .when() fires the function declared in it's .then() clause. 
+
+```javascript
+//remember that you must name every .when() with a unique name, else it will get overwritten with the newest value. 
+	newJa.when('young-run', { age: 21, speed: 12 } ).then(function( self ){
+		console.log(" I am running while I'm young! ");
+	});
+
+	newJa.age(21,true); //doesnt output anything because speed does not = 12
+	newJa.speed(12,true); //outputs " I am running while I'm young! "
+
+// for patterns which require further computation than a simple match, use a function
+
+	newJa.when('oldman', function(self){ if(self.age(true) > 100) return true; return false; }).then(function( self ){
+		console.log('GOSH IM GETTING OLD!');
+	});
+	newJa.age(99,true); //does not output because age is still below 100
+	newJa.age(101,true); //outputs 'GOSH IM GETTING OLD!'
+``` 
