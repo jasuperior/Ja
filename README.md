@@ -121,6 +121,19 @@ Well, I'm glad you asked. Below I'll take you through some of the API.
 	});
 	newJa.age(20,true); //outputs "I am finally 20!"
 ```
+```Ja.off( 'event' , function )``` is for removing a function from the specified event. Simply name the event you which to affect and input your function reference and your done!
+
+```javascript
+	var saysomething = function () { console.log('something'); }
+	newJa.age().on('change', saysomething );
+	newJa.age().on('change', function(){ console.log('still here!') });
+
+	newJa.age(10,true); //outputs "something" & "still here!"
+
+	newJa.age().off('change', saysomething);
+
+	newJa.age(25,true); //outputs "still here!"
+```
 
 ```Ja.when( name, pattern ).then( function( self ){ ... } )``` .when(), like the .on() command, awaits a change to perform it's callback which is now defined in the .then() method. However, rather than waiting for a method call, it instead waits for particular values of given keys. You can define a pattern ( object with keys and values ) as a parameter, to track changes in the Ja object for matching keys. **It is important that you use keys which exist in the Ja object, else .when WILL break.** You can also use a function in place of an object. Whether you use an object or function, in either case they must evaluate to true before .when() fires the function declared in it's .then() clause. 
 
@@ -133,7 +146,7 @@ Well, I'm glad you asked. Below I'll take you through some of the API.
 	newJa.age(21,true); //doesnt output anything because speed does not = 12
 	newJa.speed(12,true); //outputs " I am running while I'm young! "
 
-// for patterns which require further computation than a simple match, use a function
+// for patterns which require further computation than a simple match (such as inequalities or multiple function calls), use a function
 
 	newJa.when('oldman', function(self){ if(self.age(true) > 100) return true; return false; }).then(function( self ){
 		console.log('GOSH IM GETTING OLD!');
@@ -141,3 +154,60 @@ Well, I'm glad you asked. Below I'll take you through some of the API.
 	newJa.age(99,true); //does not output because age is still below 100
 	newJa.age(101,true); //outputs 'GOSH IM GETTING OLD!'
 ``` 
+
+###Helper Methods
+
+####Time Methods
+**To help with timeouts and intervals, theres a new function that makes it all pretty for you, and works beautifully with your Ja objects.**
+
+```Ja.every( time )[ milli || sec || min || hour ]( 'do' )``` The .every() method doesnt do anything new; it simply creates for you an interval at your set timeframe. The difference is that it is much prettier. :-)
+
+```javascript
+	newJa.every(10).sec('run') // every 10 seconds the object will call the .run() method. 
+	newJa.every(20).milli('anotheraction'); //err: methods must be defined before you can use them with the .every() method. 
+```
+```Ja.stopEvery( 'method' )``` stops interval on method specified. 
+```javascript
+	newJa.stopEvery('run'); //run will stop being called repetitively
+```
+
+```Ja.in( time )[ milli || sec || min || hour ]( 'do' )``` creates a timeout for the specified method. 
+
+```javascript
+	Ja.in(20).sec('run'); //will call .run() once 20 seconds have passed. 
+```
+
+####Grouping/Cursor Methods
+So you've got your object, all of your values and methods are sound, but now you need to send this data to another api, or simply want to pass the results of a given set of values to the value of another property or variable. Enters: (wait for it...........) Grouping Methods!! (and their arch nemesis Cursor Methods!!!!)
+
+You have 4 grouping/cursor methods, which takes a set of keys (from your Ja object) and returns an array or value based on the method you used. 
+
+```Ja.both( 'key1', 'key2' )```
+```Ja.all(['key1','key2','key3',...])```
+```Ja.neither( 'key1', 'key2' )```
+```Ja.not(['key1','key2','key3',...])```
+```Ja.any(['key1','key2','key3',...])```
+
+Their names pretty much say it all. But I'll show you how they work. with a basic example:
+
+```javascript
+	var members = {
+		mother: "Tanya",
+		father: "Damon",
+		sister: "Shay",
+		bigbrother: "Lay",
+		littlebrother: "Day",
+		cousin: "Joe",
+		friend: "Vinny"
+	};
+	var family = new Ja(members);
+
+	var parents = family.both('mother', 'father');
+	console.log(parents); //outputs ["Tanya", "Damon"]
+
+	var siblings = family.all(['sister', 'bigbrother', 'littlebrother']);
+	console.log(siblings); //outputs [ "Shay", "Lay", "Day" ];
+
+	var 
+
+```
