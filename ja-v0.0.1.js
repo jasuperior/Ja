@@ -109,36 +109,126 @@
 		};
 		this._intervals = {};
 
-		//binds that value of the given "key" (property) given to .bind() method.
-		//binds the value of the property given to the property being defined. 
-		//ex: a.property.bind('run') 
-		this.bind = function( key ) {
-			// var key = key();
-			if ( key  instanceof Ja ){
-				this.on('change', function( a ){
-					key.change(a.value);
-				});
-				return true;
-			}
 
-			console.log('The key entered is not a Ja object')
-			return false;
+		function createElem(htmlStr) {
+		  var
+		    helper = document.createElement('div'),
+		    result = document.createDocumentFragment(),
+		    i = 0, num;
+
+		  helper.innerHTML = htmlStr;
+
+		  for (num = helper.childNodes.length; i < num; i += 1) {
+		    result.appendChild(helper.childNodes[i].cloneNode(true))
+		  }
+
+		  return result;
+		}
+		//binds value of property to given selector
+		//todo: add callback for bind
+		this.bind = function( selector, callback ) {
+			var key = this.key;
+			var e = document.querySelectorAll(selector);
+			var len = e.length;
+			var len2 = type('Array', this.value) ? this.value.length: 1;
+			// console.log(this.value, this.value.length);
+			var cursor = '{{'+key+'}}';
+			if(len==0)
+				return false;
+			if(len==1 && len2 == 1){
+				var str = e[0].outerHTML;
+				if(str.indexOf(cursor) > -1 ){
+					str = str.replace(cursor, '<binding class="'+this.key+'">'+this.value+'</binding>');
+					var elem = createElem(str);
+					var parent = e[0].parentNode;
+					parent.replaceChild(elem,e[0]);
+					this.on('change', function( self ){
+						var el = parent.querySelector('binding.'+self.key);
+						var val = self.value;
+						function fn(){  el.innerHTML = val };
+
+						if(callback)
+							callback( val,el,fn )
+						else
+							fn();
+						// console.log('on change', elem )
+					})
+				}
+			}
+			// else if ( len == 1 && len2 > 1) { //if the this.value is an array of values, create multiple copies of template with each value. 
+			// 	var templ = e[0].outerHTML;
+			// 	var parent = e[0].parentNode;
+			// 	function after (referenceNode, newNode) {
+			// 	    referenceNode.parentNode.insertBefore(newNode, referenceNode);
+			// 	}
+
+				
+			// 	for( var i=0; i<len2; i++ ){
+			// 		var str = templ.replace(cursor, '<binding>'+this.value[i]+'</binding>');
+			// 		var elem = createElem(str);
+			// 		after( e[0], elem );
+			// 		// this.on('change', function( self ){
+			// 		// 	var el = parent.querySelector('')
+			// 		// });
+
+
+			// 	}
+			// 	e[0].remove();
+			// }
+			else {
+				return false;
+			}
 		};
 
-		// this.states = function ( array ) {
-		// 	this._states ={
-		// 		states: array,
-		// 		interpret: false
-		// 	};
-		// 	var obj = {
-		// 		states: this._states.states,
-		// 		interpret: this._states.interpret,
-		// 		state: this.state,
-		// 		automate: function ( f ){
-		// 			this.interpret = f;
-		// 		}
-		// 	}
-		// };
+		this.bindAttr = function (selector, callback ) {
+			var attr = this.key;
+			attr = attr.toLowerCase();
+			var el = document.querySelectorAll(selector);
+			var len = el.length;
+			for(var i = 0; i< len; i++ ){
+				var elem = el[i];
+				if(attr == 'class'){
+					elem.className = this.value;
+					this.on('change', function( self ){
+						elem.className = self.value;
+					});
+				}
+				else if(attr == 'id' ){
+					elem.id = this.value;
+					this.on('change', function( self ){
+						elem.id = self.value;
+					});
+				}
+				else if( attr == 'type' ){
+					elem.type = this.value;
+					this.on('change', function( self ){
+						elem.type = self.value;
+					});
+				}
+				else if(attr == 'name' ){
+					elem.name = this.value;
+					this.on('change', function( self ){
+						elem.name = self.value;
+					});
+				}
+				else {
+					if(callback){
+						callback( this.value, attr, elem )
+						console.log('callback was called');
+					}
+					else
+						elem.style[attr] = this.value;
+					this.on('change', function( self ){
+						if(callback){
+							callback( self.value, attr, elem )
+						}
+						else{
+							elem.style[attr] = self.value;
+						}
+					});
+				}
+			}
+		}
 
 
 		//for defining methods on a ja object. 
@@ -196,39 +286,41 @@
 		}
 
 		
-		this.setCopy = function ( name, obj ) {
-			var noob = {};
-			obj.map(function(k,v){
-				var l2 = {};
-				console.log(k+': '+v);
-				if(typeof v == 'function' && v() != undefined && v() instanceof Ja){
-					v().map(function(k2,v2){
-						l2[k2] = v2;
-					});
-				}
-				console.log(l2);
-				if( l2.size() > 0 )
-				noob[k].set(l2,true);
-				else
-				noob[k] = v;
-			});
-			this._arguments[name] = noob;
-			this._arguments[name].parent = that;
-			this._arguments[name].key = name;
-			this[name] = function ( value, change ) {
-				if ( change ){
-					// this._arguments[name].value = value;
-					this[name]().change(value);
-					// console.log( 'after change ' );
-					this.load();
-					// console.log( 'after load() ');
-					return value;
-				}
-				if (value)
-					return this._arguments[name].value
-				return this._arguments[name]
-			}
-		}
+		// this.setCopy = function ( name, obj ) {
+		// 	var noob = {};
+		// 	obj.map(function(k,v){
+		// 		var l2 = {};
+		// 		console.log(k+': '+v);
+		// 		if(typeof v == 'function' && v() != undefined && v() instanceof Ja){
+		// 			v().map(function(k2,v2){
+		// 				l2[k2] = v2;
+		// 			});
+		// 		}
+		// 		console.log(l2);
+		// 		if( l2.size() > 0 )
+		// 		noob[k].set(l2,true);
+		// 		else
+		// 		noob[k] = v;
+		// 	});
+		// 	this._arguments[name] = noob;
+		// 	this._arguments[name].parent = that;
+		// 	this._arguments[name].key = name;
+		// 	this[name] = function ( value, change ) {
+		// 		if ( change ){
+		// 			// this._arguments[name].value = value;
+		// 			this[name]().change(value);
+		// 			// console.log( 'after change ' );
+		// 			this.load();
+		// 			// console.log( 'after load() ');
+		// 			return value;
+		// 		}
+		// 		if (value)
+		// 			return this._arguments[name].value
+		// 		return this._arguments[name]
+		// 	}
+		// }
+
+
 		this.when = function( name, pattern ) {
 			var copy = {};
 			// console.log(pattern)
@@ -388,7 +480,33 @@
 		}
 
 		this.not = function (key) {
+			if(type('String', key))
 			return this.neither(key, key);
+			if(type('Array', key)){
+				var len = this.size();
+				len = len - 24;
+				var num = Math.floor((Math.random()*len)+1);
+				num = num+23;
+				var fired = false;
+				var count = 0;
+				var iteration = 0;
+				var result = false;
+				var that = this;
+				this.map(function(k,v){	
+						if( iteration == num ){
+							console.log( iteration, num, k, key )
+							if( k!= key && typeof that[k] == 'function' )
+								result = that[k](true);
+							else
+								num++
+						}
+						iteration++;
+				});
+				if ( result === false )
+					return this.not( key );
+				return result;
+			}
+			return false;
 		}
 
 		this._algebra = {
