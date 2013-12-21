@@ -2,7 +2,7 @@ Ja
 ==
 Meet Ja, The Real Object library for javascript. This is still largely an experimental build, any many changes could arise which could break your code in the future. Ja allows you to create javascript objects which can act and react just like real world objects -- to other objects and events happening in the world (program).
 
-*What exactly does that mean?*
+*What exactly does that mean?* 
 
 heres an example
 
